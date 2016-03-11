@@ -1,0 +1,258 @@
+Cayla Shaver
+Architecture
+CS315
+HW10 (4.9.2, 4.9.3, 4.9.4, 4.10.3, 4.11.1, 
+      4.11.2, 4.14.1, 4.14.2, 4.14.5, 5.2.1, 5.2.2)
+
+
+4.9 In this exercise, we examine how data dependencies affect execution in the 
+basic 5-stage pipeline described in Section 4.5. Problems in this exercise 
+refer to the following sequence of instructions:
+
+or r1, r2, r3
+or r2, r1, r4
+or r1, r1, r2
+
+Also, assume the following cycle times for each of the options related to 
+forwarding:
+
+Without Forwarding      With Full Forwarding       With ALU-ALU Forwarding Only
+250ps                   300ps                      290ps
+
+4.9.2 Assume there is no forwarding in this pipelined processor. Indicate 
+hazards and add nop instructions to eliminate them.
+
+hazards:
+        1   2   3   4   5   6   7   8   9
+or      IF  ID  EX  MEM WB   
+need to access the r1 for the call below in stage 4, this is a hazard
+or          IF  ID  EX  MEM WB 
+need to access the r2 for the call below in stage 5, this is a hazard
+or              IF  ID  EX  MEM WB
+
+corrected:
+        1   2   3   4   5   6   7   8   9   10  11  
+or      IF  ID  EX  MEM WB
+noop        IF  ID  EX  MEM WB
+noop            IF  ID  EX  MEM WB
+or                  IF  ID  EX  MEM WB
+noop                    IF  ID  EX  MEM WB
+noop                        IF  ID  EX  MEM WB
+or                              IF  ID  EX  MEM WB
+
+
+
+4.9.3 Assume there is full forwarding. Indicate hazards and add NOP 
+instructions to eliminate them.
+
+hazards:
+        1   2   3   4   5   6   7   8   9   10  11  
+or      IF  ID  EX  MEM WB
+or          IF  ID  EX  MEM WB
+or              IF  ID  EX  MEM WB
+
+corrected:
+no changes and no noops need to be added since there is forwarding all of the necessary info is already available
+        1   2   3   4   5   6   7    
+or      IF  ID  EX  MEM WB
+or          IF  ID  EX  MEM WB
+or              IF  ID  EX  MEM WB
+
+
+
+4.9.4 What is the total execution time of this instruction sequence without forwarding and with full forwarding? What is the speedup achieved by adding full forwarding to a pipeline that had no forwarding?
+
+Execution time without forwarding:
+11 cycles * 250 ps = 2750 ps
+
+Execution time with forwarding:
+7 cycles * 300 ps = 2100 ps
+
+Speedup:
+2750 / 2100 = 1.30952380952 speedup
+
+
+
+4.10 In this exercise, we examine how resource hazards, control hazards, and 
+Instruction Set Architecture (ISA) design can affect pipelined execution. 
+Problems in this exercise refer to the following fragment of MIPS code:
+
+    sw      r16, 12(r6)
+    lw      r16, 8(r6)
+    beq     r5, r4, Label   # Assume r5 != r4
+    add     r5, r1, r4
+    slt     r5, r15, r4
+
+Assume that individual pipeline stages have the following latencies:
+
+IF      ID      EX      MEM     WB
+200ps   120ps   150ps   190ps   100ps
+
+4.10.3 Assuming stall-on-branch and no delay slots, what speedup is achieved on 
+this code if branch outcomes are determined in the ID stage, relative to the 
+execution where branch outcomes are determined in the EX stage?
+
+EX stage:
+        1   2   3   4   5   6   7   8   9   
+sw      IF  ID  EX  MEM WB
+lw          IF  ID  EX  MEM WB
+beq             IF  ID  EX  MEM WB
+add                 IF  ID  EX  MEM WB
+slt                     IF  ID  EX  MEM WB 
+
+for using the ex stage for the branch we would have to stall for 2 stages, when using the ID we would only need to stall 1 stage with the branch. The speedup would be 0.909090  
+
+
+4.11 Consider the following loop.
+
+loop:   lw  r1, 0(r1)
+        and r1, r1, r2
+        lw  r1, 0(r1)
+        lw  r1, 0(r1)
+        beq r1, r0, loop
+
+Assume that perfect branch prediction is used (no stalls due to control 
+hazards), that there are no delay slots, and that the pipeline has full 
+forwarding support. Also assume that many iterations of this loop are executed before the loop exits.
+
+4.11.1 Show a pipeline execution diagram for the third iteration of this loop, from the cycle in which we fetch the first instruction of that iteration up to (but not including) the cycle in which we can fetch the first instruction of the next iteration. Show all instructions that are in the pipeline during these cycles (not just those from the third iteration).
+
+Iterations:
+        16   17   18   19   20   21   22   23   24   25   26   27   28   29   30
+beq     IF   ID   EX   MEM  WB
+lw           IF   ID   EX   MEM  WB
+and                    IF   ID   EX   MEM  WB
+lw                          IF   ID   EX   MEM  WB
+lw                                    IF   ID   EX   MEM  WB
+beq                                             IF   ID   EX   MEM  WB
+lw                                                   IF   ID   EX   MEM  WB
+
+
+
+4.11.2 How often (as a percentage of all cycles) do we have a cycle in which all five pipeline stages are doing useful work?
+
+ZERO!! no instructions will be executing all at the same time at any point in this loop
+
+
+4.14 This exercise is intended to help you understand the relationship between 
+delay slots, control hazards, and branch execution in a pipelined processor. 
+In this exercise, we assume that the following MIPS code is executed on a 
+pipelined processor with a 5-stage pipeline, full forwarding, and a 
+predict-taken branch predictor:
+
+            lw  r2,0(r1)
+    label1: beq r2,r0,label2 # not taken once, then taken
+            lw  r3,0(r2)
+            beq r3,r0,label1 # taken
+            add r1,r3,r1
+    label2: sw  r1,0(r2)
+
+4.14.1 Draw the pipeline execution diagram for this code, assuming there are no 
+delay slots and that branches execute in the EX stage.
+
+Iterations:
+        1   2   3   4   5   6   7   8   9   10   11   12   13   14   15   16   
+lw      IF  ID  EX  MEM WB
+beq             IF  ID  EX  M   WB
+sw                  IF  ID  EX  M   WB   ABORT
+lw                          IF  ID  EX  M   WB
+beq                                 IF  ID  EX   M    WB
+add                                     IF  ID   EX   M    WB
+beq                                              IF   ID   EX   M    WB
+sw                                                    IF   ID   EX   M    WB
+
+
+4.14.2 Repeat 4.14.1, but assume that delay slots are used. In the given code, 
+the instruction that follows the branch is now the delay slot instruction for 
+that branch.
+
+Iterations:
+        1   2   3   4   5   6   7   8   9   10   11   12   13   14   15   16   
+lw      IF  ID  EX  M   WB
+noop        IF  ID  EX  M   WB
+beq             IF  ID  EX  M   WB
+sw                  IF  ID  EX  M   WB   ABORT
+noop                    IF  ID  EX  M   WB
+lw                          IF  ID  EX  M   WB
+noop                            IF  ID  EX  M    WB
+beq                                 IF  ID  EX   M    WB
+add                                     IF  ID   EX   M    WB
+noop                                        IF   ID   EX   M    WB
+beq                                              IF   ID   EX   M    WB
+sw                                                    IF   ID   EX   M    WB
+
+
+
+4.14.5 For the given code, what is the speedup achieved by moving branch 
+execution into the ID stage? Explain your answer. In your speedup calculation, 
+assume that the additional comparison in the ID stage does not affect clock 
+cycle time.
+
+Iterations:
+        1   2   3   4   5   6   7   8   9   10   11   12   13      
+lw      IF  ID  EX  M   WB
+noop        IF  ID  EX  M   WB
+beq             IF  ID  EX  M   WB
+sw              IF  ID  EX  M   WB   ABORT
+noop                IF  ID  EX  M   WB
+lw                      IF  ID  EX  M   WB
+noop                        IF  ID  EX  M    WB
+beq                             IF  ID  EX   M    WB
+add                             IF  ID   EX   M    WB
+noop                                IF   ID   EX   M    WB
+beq                                      IF   ID   EX   M    WB
+sw                                       IF   ID   EX   M    WB
+
+
+13 / 16 = 0.8125  speedup
+
+
+5.2 Caches are important to providing a high-performance memory hierarchy to 
+processors. Below is a list of 32-bit memory address references, given as word 
+addresses.
+
+3, 180, 43, 2, 191, 88, 190, 14, 181, 44, 186, 253
+
+5.2.1 For each of these references, identify the binary address, the tag, and 
+the index given a direct-mapped cache with 16 one-word blocks. Also list if 
+each reference is a hit or a miss, assuming the cache is initially empty.
+
+Given       Binary      Tag     Index       Hit/Miss
+
+3           0000 0011   0000    0011 (3)    Miss
+180         1011 0100   1011    0100 (4)    Miss
+43          0010 1011   0010    1011 (11)   Miss
+2           0000 0010   0000    0010 (2)    Miss
+191         1011 1111   1011    1111 (15)   Miss
+88          0101 1000   0101    1000 (8)    Miss
+190         1011 1110   1011    1110 (14)   Miss
+14          0000 1110   0000    1110 (14)   Miss
+181         1011 0101   1011    0101 (5)    Miss
+44          0010 1100   0010    1100 (12)   Miss
+186         1011 1010   1011    1010 (10)   Miss
+253         1111 1101   1111    1101 (13)   Miss       
+
+
+
+5.2.2 For each of these references, identify the binary address, the tag, and 
+the index given a direct-mapped cache with two-word blocks and a total size of 
+8 blocks. Also list if each reference is a hit or a miss, assuming the cache is 
+initially empty.
+
+Given       Binary      Tag     Index       Hit/Miss
+
+3           0000 0011   0000    001 (1)     Miss
+180         1011 0100   1011    010 (2)     Miss
+43          0010 1011   0010    101 (5)     Miss
+2           0000 0010   0000    001 (1)     Hit from 3
+191         1011 1111   1011    111 (7)     Miss
+88          0101 1000   0101    100 (4)     Miss
+190         1011 1110   1011    111 (7)     Hit from 191
+14          0000 1110   0000    111 (7)     Miss
+181         1011 0101   1011    010 (2)     Hit from 180
+44          0010 1100   0010    110 (6)     Miss
+186         1011 1010   1011    101 (5)     Miss
+253         1111 1101   1111    110 (6)     Miss
+
+
+

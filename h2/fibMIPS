@@ -1,0 +1,41 @@
+# Use fibo.c to write a MIPS program that computes
+# the nth Fibonacci number and print the result
+
+		.text
+		.globl main
+main:	
+		subu 	$sp, $sp, 4			#Make stack space
+		sw	$ra, 0($sp)			#Save return addy
+
+		#read in a number and put in a temp register
+		li	$v0, 5				#n read the int in
+		syscall					#call sys for service
+		move	$t0, $v0			#move to a safe place
+
+		#loopage
+		li	$t1, 1				# old
+		li 	$t2, 0				# older
+		li	$t3, 0				# new
+		li	$t4, 2				# i
+lp_tst:	bgt		$t4, $t0, done
+
+		add 	$t3, $t1, $t2 			#add old + older put in new
+		move	$t2, $t1 			#move old to older
+		move 	$t1, $t3				#move new to old
+		addi 	$t4, $t4, 1 			#increment i
+		j	lp_tst 				#jump back to begin of loop
+
+		#done with the loop print the result
+done: 	
+		li	$v0, 1 				#print the int
+		move 	$a0, $t3			#move the new into a0
+		syscall					#call system for service
+
+		#return values to the stack and release space
+		lw	$ra, 0($sp)			#get the return addy
+		addu	$sp, $sp, 4			#free back stack space
+
+
+		#exit program
+		li		$v0, 10
+		syscall

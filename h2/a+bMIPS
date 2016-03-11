@@ -1,0 +1,47 @@
+# Read in two ints a and b from the console
+# Check if a < b then compute the sum a +(a+1)+(a+2)+...+b
+# Check if a = b then compute a
+# Check if a > b then compute 0
+# After calculating print result and exit
+
+		.text
+		.globl main
+main:
+		subu	$sp, $sp, 4 		#make stack space
+		sw		$ra, 0($sp)			#save return addy
+
+		#read in A and store to memory
+		li		$v0, 5 				#read int A
+		syscall						#call for service
+		move	$t0, $v0			#move to safe space
+
+		#read in B and store to memory
+		li		$v0, 5 				#read int B
+		syscall						#call for service
+		move	$t1, $v0			#move to safe space
+
+
+		#loopage
+		li		$t2, 0				#create SUM space and init to 0
+
+
+							
+lp_tst:	bgt		$t0, $t1, done		#check if a < b
+
+		add 	$t2, $t0, $t2		#add A + count
+		addi	$t0, $t0, 1 		#increment A
+		j		lp_tst
+
+
+		#done with loop print result
+done:	li		$v0, 1 				#code to print an int
+		move	$a0, $t2			#move the int to a0
+		syscall						#print the int
+
+		#release all values from the stack
+		lw		$ra, 0($sp)
+		addu	$sp, $sp, 4
+
+
+		li		$v0, 10
+		syscall

@@ -1,0 +1,136 @@
+Cayla Shaver
+Architecture
+CS 315
+Homework 11
+
+
+5.2.1
+
+Given 		Binary 		Tag 	Index 		Hit/Miss
+
+3           0000 0011   0000    3 			Miss
+180         1011 0100   1011    4 			Miss
+43          0010 1011   0010    11 			Miss
+2           0000 0010   0000    2 			Miss
+191         1011 1111   1011    15 			Miss
+88          0101 1000   0101    8 			Miss
+190         1011 1110   1011    14  		Miss
+14          0000 1110   0000    14 			Miss
+181         1011 0101   1011    5 			Miss
+44          0010 1100   0010    12 			Miss
+186         1011 1010   1011    10 			Miss
+253         1111 1101   1111    13   		Miss
+
+5.2.2
+
+Given 		Binary 		Tag 	Index 		Hit/Miss
+
+3           0000 0011   0000    1 			Miss
+180         1011 0100   1011    2 			Miss
+43          0010 1011   0010    5 			Miss
+2           0000 0010   0000    1 			Hit
+191         1011 1111   1011    7 			Miss
+88          0101 1000   0101    4 			Miss
+190         1011 1110   1011    7   		Hit
+14          0000 1110   0000    7 			Miss
+181         1011 0101   1011    2 			Hit
+44          0010 1100   0010    6 			Miss
+186         1011 1010   1011    5 			Miss
+253         1111 1101   1111    6   		Miss
+
+5.2.3
+
+Given 		Binary 		Tag 	Index 		Hit/Miss
+
+3           0000 0011   0000    0 			Miss
+180         1011 0100   1011    1 			Miss
+43          0010 1011   0010    0 			Miss
+2           0000 0010   0000    0 			Miss
+191         1011 1111   1011    1 			Miss
+88          0101 1000   0101    0 			Miss
+190         1011 1110   1011    1  		    Hit
+14          0000 1110   0000    1 			Miss
+181         1011 0101   1011    1 			Miss
+44          0010 1100   0010    1 			Miss
+186         1011 1010   1011    0 			Miss
+253         1111 1101   1111    1   		Miss
+
+The best miss rate here is 5.2.2 because it has two hits others have less than that
+
+5.2.4
+
+	Calculate the total number of bits required for the cache listed above, assuming a 32-bit address. Given that total size, find the total size of the closest direct-mapped cache with 16-word blocks of equal size or greater. Explain why the second cache, despite its larger data size, might provide slower performance than the first cache. 
+
+	Part 1
+	32 KiB = 32 * 1024 = 32768 Bytes
+	32 / ( 2 * 4) = 4096 # of blocks
+	data size / (block size * word size) = # of blocks
+	32768 + (1 + 17) * 4096 = # bytes
+	datasize + (valid bit size + tag size) * # of blocks = # bytes
+	32768 + (73728 / 8) = 32768 + 9216 = 41984
+
+
+	Part 2
+	tag size = 17 - 3 = 14 bits
+	41984 <= (16 * 4) + (1 + 14) * # of blocks
+	datasize <= blocksize + ( valid bit size + tag size) * # of blocks
+	41984 <= 64 + 15 * # of blocks
+	41984 <= 79 * # of blocks 
+	so # of blocks is about 531 blocks
+
+5.3
+	For a direct mapped cache design with a 32-bit address, the following bits of the address are used to access the cache.  The byte offset is bits 0-1, and the word offset is bits 2-4.
+	Tag 	Index 	Offset
+	31-10 	9-5 	4-0
+
+5.3.1
+	What is the cache block size in words?
+	2^5 = 32 which is 8 words.
+
+5.3.2
+	How many entries does the cache have?
+	2^5 = 32 so there are 32 entries in the cache.
+
+5.3.3
+	What is the ratio between total bits required for such a cache implementation over the data storage bits?
+	[32 * (32 * 8 + 20 + 1)] / [32 * (32* 8)] = 1.08203125
+
+
+Starting from power on the following byte addressed cache references are recorded
+	Address
+	0 	4 	16 	132 	232 	160 	1024 	30 	140 	3100 	180 	2180
+
+5.3.4
+	How many blocks are replaced?
+	3 blocks are replaced
+
+
+5.3.5
+	What is the hit ratio?
+	0.25
+
+
+5.3.6
+	List the final state of the cache with each valid entry represented as a record of <index, tag, data>
+
+	<000001 base 2, 0001 base 2, memory[1024]>
+	<000001 base 2, 0011 base 2, memory[16]> 
+	<001011 base 2, 0000 base 2, memory[176]>
+	<001000 base 2, 0010 base 2, memory[2176]>
+	<001110 base 2, 0000 base 2, memory[224]>
+	<001010 base 2, 0000 base 2, memory[160]>
+	
+
+
+5 -- from website.
+	A certain processor has a cache with no write buffer. Describe what happens after the following events occur:
+	1. The processor attempts to read the word at address 0x1000 D000 and the valid bit is 0.
+		This will load from memory into cache.
+	2. The processor attempts to read the word at address 0x1000 D000 and the tags don't match.
+		This will cause a miss and evict the block back to memory.
+	3. The processor attempts to write the word at address 0x1000 D000 and the tags don't match. 		The cache is write-through and write-allocate.
+		Evict the cache block to memory. Write the data to both the line in cache and the word in memory.
+	4. The processor attempts to write the word at address 0x1000 D000 and the tags don't match The 	cache is write-through and no-write-allocate.
+		This is a miss that gets written directly to memory but not to cache line.
+	5. The processor attempts to write the word at address 0x1000 D000 and the valid bit is 0. The  	cache is write-back and write-allocate.
+		Change the valid bit to 1 then write to cache block and add the tag. 

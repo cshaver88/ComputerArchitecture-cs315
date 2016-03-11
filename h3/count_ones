@@ -1,0 +1,49 @@
+#
+# Program to read in a positive or negative number and return 
+# the number of 1's in the binary representation of the number
+#  input == -5 
+#       ~0101---the binary number of 5
+#       1010  (1's compliment)
+#       1010 + 1( 2's compliment)
+#       1011 (this is -5)   31 cuz 1's go in front of 1011
+#       count them up and you get 31
+    .text
+    .globl  main
+main:
+       subu     $sp, $sp, 4          # Make additional stck space
+       sw       $ra, 0($sp)          # Save the return address
+
+        # Read n
+        li      $v0, 5              # Code to read an int
+        syscall                     # Read n
+        move    $t1, $v0               # save it somewhere
+
+        li      $t0, 0                  # counter = 0
+        li  $t2, 0          #set up temp
+        j       count
+
+count:
+        #count how many 1's are in the number
+#if it is already in binary why is 
+#this only looking at the number that I put into the program
+        beq     $t1, $zero, zero        #while n != 0 do the following
+        andi    $t2, $t1, 1             #n & 1
+        add     $t0, $t0, $t2             #count ++
+        srl     $t1, $t1, 1
+        j   count
+        move    $a0, $t0
+
+zero:
+        move    $a0, $t0
+        # Print the result
+        li      $v0, 1                  # Code to print an int
+        syscall                         # Print the number 1's
+
+    # Restore the return address 
+        lw      $ra, 0($sp)                 # Retrieve the return address
+        addu    $sp, $sp, 4             # Make additional stack space.
+
+        # In Mars exit
+        li      $v0, 10
+        syscall
+

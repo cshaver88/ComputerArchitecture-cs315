@@ -1,0 +1,74 @@
+#
+# Program to read a positive integer n, and compute the nth fibonacci number
+#
+#       f_0 = 0
+#       f_1 = 1
+#       f_n = f_(n + 1) + f_(n + 2)    for   n >= 2
+#
+# This version uses recursion.
+#
+   .text
+   .globl   main
+main:
+   subu  $sp, $sp, 16            # Make additional stck sp.
+   sw $ra, 0($sp)    # Save the return address
+
+        # Read n
+        li      $v0, 5                  # Code to print an int
+        syscall                         # Read n
+
+        # Call Fibo function    
+        move    $a0, $v0      #this is n
+        jal     fibo
+
+        # Print the result
+        move    $a0, $v0                # Put fibo_num in $a0
+        li      $v0, 1                  # Code to print an int
+        syscall                         # Print the nth fibo number
+
+   # Restore the return address 
+      lw $ra, 0($sp)    # Retrieve the return address
+   addu  $sp, $sp, 4            # Make additional stack space.
+
+        # In Mars exit
+        li      $v0, 10
+        syscall
+
+        #############################################################
+        # Fibo Function
+        #    $a0 = n
+        #
+fibo:
+        # Put $ra and $s0 on the stack
+        addi    $sp, $sp, -12
+        sw      $s1, 8($sp)          
+        sw      $ra, 4($sp)
+        sw      $s0, 0($sp)
+
+        li      $t0, 0 
+        li      $t1, 1
+        bne     $t0, $a0, else_if
+        li  $v0, 0               
+        j done
+
+else_if:
+    bne $t1, $a0, else
+    li $v0, 1
+    j done
+
+else:   
+    move    $s0, $a0
+    addi    $a0, $a0, -1
+    jal fibo
+    move    $s1, $v0
+    addi    $a0, $s0, -2
+    jal     fibo
+    add     $v0, $s1, $v0
+
+done:   
+        # Retrieve $ra and $s0 from stack and return
+        lw      $s1, 8($sp) 
+        lw      $ra, 4($sp)
+        lw      $s0, 0($sp)
+        addi    $sp, $sp, 12            
+        jr      $ra
